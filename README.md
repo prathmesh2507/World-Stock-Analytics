@@ -126,7 +126,7 @@ Global-Stock-Intelligence-Dashboard/
 ├── requirements.txt
 ├── README.md
 │
-└── Dashboard Assets
+└── screenshots
 ```
 
 ---
@@ -162,25 +162,24 @@ Global-Stock-Intelligence-Dashboard/
 
 # 📸 Dashboard Preview
 
-## Hero Dashboard
+## Stock Exploration
 
-Add Screenshot Here
+![Hero Dashboard](screenshots/dashboard1.png)
 
-```md
-![Hero](screenshots/dashboard.png)
-```
+![Stock Analytics](screenshots/dashboard2.png)
+
+---
+
+## Country Performance
+
+![Analytics](screenshots/analytics.png)
+
+---
 
 ## Market Analytics
 
-```md
-![Analytics](screenshots/analytics.png)
-```
-
-## Stock Exploration
-
-```md
 ![Stocks](screenshots/stocks.png)
-```
+
 
 ---
 
