@@ -160,7 +160,7 @@ padding:28px;
 
 border-radius:24px;
 
-height:220px;
+height:200px;
 
 display:flex;
 
@@ -190,7 +190,7 @@ box-shadow:
 
 .kpi-icon{
 
-font-size:38px;
+font-size:34px;
 
 margin-bottom:10px;
 
@@ -206,7 +206,9 @@ color:#94A3B8;
 
 .kpi-value{
 
-font-size:24px;
+font-size:20px;
+
+line-height:1.2;
 
 font-weight:800;
 
@@ -220,7 +222,7 @@ text-align:center;
 
 .kpi-change{
 
-font-size:24px;
+font-size:18px;
 
 font-weight:700;
 
@@ -230,6 +232,105 @@ color:#22C55E;
 
 }
 
+
+/* FILTER BOX */
+
+.filter-wrapper{
+
+background:rgba(30,41,59,.88);
+
+padding:22px;
+
+border-radius:22px;
+
+border:1px solid rgba(255,255,255,.07);
+
+margin-bottom:25px;
+
+box-shadow:
+0 8px 25px rgba(0,0,0,.25);
+
+}
+
+/* Streamlit Selectbox */
+
+.stSelectbox > div > div{
+
+background:#1E293B !important;
+
+border-radius:14px !important;
+
+border:1px solid rgba(255,255,255,.08);
+
+color:white !important;
+
+}
+
+/* Date Input */
+
+.stDateInput > div{
+
+background:#1E293B !important;
+
+border-radius:14px;
+
+}
+
+/* Button */
+
+.stButton button{
+
+background:#38BDF8;
+
+color:white;
+
+border:none;
+
+border-radius:14px;
+
+height:50px;
+
+font-weight:700;
+
+width:100%;
+
+margin-top:28px;
+
+}
+
+.stButton button:hover{
+
+background:#0EA5E9;
+
+}
+
+/* Labels */
+
+label{
+
+font-weight:600 !important;
+
+color:#CBD5E1 !important;
+
+}
+
+.stDateInput input{
+
+background:#1E293B !important;
+
+color:white !important;
+
+border:none !important;
+
+}
+
+.stDateInput{
+
+background:#1E293B !important;
+
+border-radius:14px;
+
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -280,29 +381,70 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ------------------------------------------------
 # DATA PREPARATION
 # ------------------------------------------------
-filter1, filter2, filter3, filter4 = st.columns(4)
+# ====================================================
+# DATA PREP
+# ====================================================
 
-with filter1:
+df = df.sort_values(["Ticker", "Date"])
+
+df["Daily_Return"] = df.groupby("Ticker")["Close"].pct_change() * 100
+
+# ====================================================
+# FILTER TITLE
+# ====================================================
+
+st.markdown(
+    """
+<h2 style="
+margin-bottom:20px;
+">
+🔎 Explore Market Data
+</h2>
+""",
+    unsafe_allow_html=True,
+)
+
+# ====================================================
+# FILTERS
+# ====================================================
+
+c1, c2, c3, c4 = st.columns([1.1, 1.2, 1.4, 0.7])
+
+with c1:
 
     selected_country = st.selectbox(
-        "🌍 Country", ["All"] + sorted(df["Country"].unique())
+        "🌍 Country", ["All"] + sorted(df["Country"].dropna().unique())
     )
 
-with filter2:
+with c2:
 
-    selected_stock = st.selectbox("📈 Stock", ["All"] + sorted(df["Ticker"].unique()))
+    country_filtered = df.copy()
 
-with filter3:
+    if selected_country != "All":
+
+        country_filtered = country_filtered[
+            country_filtered["Country"] == selected_country
+        ]
+
+    selected_stock = st.selectbox(
+        "📈 Stock", ["All"] + sorted(country_filtered["Ticker"].dropna().unique())
+    )
+
+with c3:
 
     selected_dates = st.date_input(
         "📅 Date Range", value=(df["Date"].min(), df["Date"].max())
     )
 
-with filter4:
+with c4:
 
-    st.write("")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     reset = st.button("Reset Filters", use_container_width=True)
+
+# ====================================================
+# APPLY FILTERS
+# ====================================================
 
 filtered_df = df.copy()
 
@@ -314,8 +456,37 @@ if selected_stock != "All":
 
     filtered_df = filtered_df[filtered_df["Ticker"] == selected_stock]
 
+start_date, end_date = selected_dates
+
+filtered_df = filtered_df[
+    (filtered_df["Date"] >= pd.to_datetime(start_date))
+    & (filtered_df["Date"] <= pd.to_datetime(end_date))
+]
+
+latest_filtered = filtered_df[filtered_df["Date"] == filtered_df["Date"].max()].copy()
+
+# ====================================================
+# KPI CALCULATIONS
+# ====================================================
+
+best_stock = latest_filtered.loc[latest_filtered["Daily_Return"].idxmax()]
+
+worst_stock = latest_filtered.loc[latest_filtered["Daily_Return"].idxmin()]
+
+volume_stock = latest_filtered.loc[latest_filtered["Volume"].idxmax()]
+
+avg_return = latest_filtered["Daily_Return"].mean()
+
+trend = "Bullish 📈" if avg_return > 0 else "Bearish 📉"
+
+stock_count = latest_filtered["Ticker"].nunique()
+
+# ====================================================
+# SNAPSHOT TITLE
+# ====================================================
 
 st.markdown("## 📊 Market Snapshot")
+
 st.markdown(
     """
 <p style="
@@ -323,114 +494,171 @@ margin-top:-10px;
 margin-bottom:15px;
 color:#94A3B8;
 ">
-Quick overview of today's market leaders and movers
+Quick overview of market leaders and movers
 </p>
 """,
     unsafe_allow_html=True,
 )
 
+# ====================================================
+# KPI ROW
+# ====================================================
 
-col1, col2, col3, col4, col5 = st.columns([1.2, 1.2, 1.2, 1.2, 1.2], gap="medium")
+col1, col2, col3, col4, col5 = st.columns(5)
 
-
-df = df.sort_values(["Ticker", "Date"])
-
-df["Daily_Return"] = df.groupby("Ticker")["Close"].pct_change() * 100
-
-latest_date = df["Date"].max()
-
-filtered_df = df[df["Date"] == latest_date].copy()
-
-# Best Performer
-best_stock = filtered_df.loc[filtered_df["Daily_Return"].idxmax()]
-
-# Worst Performer
-worst_stock = filtered_df.loc[filtered_df["Daily_Return"].idxmin()]
-
-# Highest Volume
-volume_stock = filtered_df.loc[filtered_df["Volume"].idxmax()]
-
-# Countries Covered
-country_count = filtered_df["Country"].nunique()
-
-# Strongest Market
-country_perf = filtered_df.groupby("Country")["Daily_Return"].mean().reset_index()
-
-best_country = country_perf.loc[country_perf["Daily_Return"].idxmax()]
-
+# ------------------------------------------------
 
 with col1:
+
     st.markdown(
         f"""
     <div class="kpi-card">
-        <div class="kpi-icon">📈</div>
-        <div class="kpi-title">Best Performer</div>
-        <div class="kpi-value">{best_stock['Ticker']}</div>
-        <div class="kpi-change">
-            {best_stock['Daily_Return']:.2f}%
-        </div>
+
+    <div class="kpi-icon">
+    🚀
+    </div>
+
+    <div class="kpi-title">
+    Top Gainer
+    </div>
+
+    <div class="kpi-value">
+    {best_stock['Stock_Name']}
+    </div>
+
+    <div style="color:#94A3B8;">
+    {best_stock['Ticker']}
+    </div>
+
+    <div class="kpi-change">
+    {best_stock['Daily_Return']:.2f}%
+    </div>
+
     </div>
     """,
         unsafe_allow_html=True,
     )
+
+# ------------------------------------------------
 
 with col2:
+
     st.markdown(
         f"""
     <div class="kpi-card">
-        <div class="kpi-icon">🔥</div>
-        <div class="kpi-title">Strongest Market</div>
-        <div class="kpi-value">{best_country['Country']}</div>
-        <div class="kpi-change">
-            {best_country['Daily_Return']:.2f}%
-        </div>
+
+    <div class="kpi-icon">
+    📉
+    </div>
+
+    <div class="kpi-title">
+    Biggest Drop
+    </div>
+
+    <div class="kpi-value">
+    {worst_stock['Stock_Name']}
+    </div>
+
+    <div style="color:#94A3B8;">
+    {worst_stock['Ticker']}
+    </div>
+
+    <div class="kpi-change"
+    style="color:#EF4444;">
+    {worst_stock['Daily_Return']:.2f}%
+    </div>
+
     </div>
     """,
         unsafe_allow_html=True,
     )
 
+# ------------------------------------------------
+
 with col3:
+
     st.markdown(
         f"""
     <div class="kpi-card">
-    <div class="kpi-icon">💰</div>
-    <div class="kpi-title">Highest Volume</div>
-    <div class="kpi-value">{volume_stock['Ticker']}</div>
+
+    <div class="kpi-icon">
+    💰
+    </div>
+
+    <div class="kpi-title">
+    Most Traded
+    </div>
+
+    <div class="kpi-value">
+    {volume_stock['Stock_Name']}
+    </div>
+
+    <div style="color:#94A3B8;">
+    {volume_stock['Ticker']}
+    </div>
+
     <div class="kpi-change">
     {volume_stock['Volume']:,.0f}
     </div>
+
     </div>
     """,
         unsafe_allow_html=True,
     )
+
+# ------------------------------------------------
 
 with col4:
+
     st.markdown(
         f"""
     <div class="kpi-card">
-    <div class="kpi-icon">📉</div>
-    <div class="kpi-title">Biggest Decliner</div>
-    <div class="kpi-value">{worst_stock['Ticker']}</div>
-    <div class="kpi-change" style="color:#EF4444;">
-    {worst_stock['Daily_Return']:.2f}%
+
+    <div class="kpi-icon">
+    📊
     </div>
+
+    <div class="kpi-title">
+    Market Trend
+    </div>
+
+    <div class="kpi-value">
+    {avg_return:.2f}%
+    </div>
+
+    <div class="kpi-change">
+    {trend}
+    </div>
+
     </div>
     """,
         unsafe_allow_html=True,
     )
 
+# ------------------------------------------------
+
 with col5:
+
     st.markdown(
         f"""
     <div class="kpi-card">
-    <div class="kpi-icon">🌍</div>
-    <div class="kpi-title">Markets Covered</div>
+
+    <div class="kpi-icon">
+    🔎
+    </div>
+
+    <div class="kpi-title">
+    Stocks In View
+    </div>
+
     <div class="kpi-value">
-    {country_count}
+    {stock_count}
     </div>
+
     <div class="kpi-change">
-    Countries
+    Companies
     </div>
+
     </div>
     """,
         unsafe_allow_html=True,
