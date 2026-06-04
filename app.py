@@ -10,12 +10,13 @@ st.set_page_config(
     page_title="Global Stock Intelligence Dashboard",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 # ------------------------------------------------
 # LOAD DATA
 # ------------------------------------------------
+
 
 @st.cache_data
 def load_data():
@@ -25,13 +26,15 @@ def load_data():
 
     return df
 
+
 df = load_data()
 
-#------------------------------------------------
+# ------------------------------------------------
 # Theme CSS
-#------------------------------------------------
+# ------------------------------------------------
 
-st.markdown("""
+st.markdown(
+    """
 <style>
 
 /* Main App */
@@ -228,17 +231,19 @@ color:#22C55E;
 }
 
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
-
-#------------------------------------------------
+# ------------------------------------------------
 # HERO SECTION
-#------------------------------------------------
+# ------------------------------------------------
 
 latest_date = df["Date"].max()
 
-st.markdown(f"""
+st.markdown(
+    f"""
 <div class="hero-card">
 
 <div class="hero-title">
@@ -265,17 +270,54 @@ interactive analytics.
 </div>
 
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 
-
-#------------------------------------------------
+# ------------------------------------------------
 # DATA PREPARATION
-#------------------------------------------------
+# ------------------------------------------------
+filter1, filter2, filter3, filter4 = st.columns(4)
+
+with filter1:
+
+    selected_country = st.selectbox(
+        "🌍 Country", ["All"] + sorted(df["Country"].unique())
+    )
+
+with filter2:
+
+    selected_stock = st.selectbox("📈 Stock", ["All"] + sorted(df["Ticker"].unique()))
+
+with filter3:
+
+    selected_dates = st.date_input(
+        "📅 Date Range", value=(df["Date"].min(), df["Date"].max())
+    )
+
+with filter4:
+
+    st.write("")
+
+    reset = st.button("Reset Filters", use_container_width=True)
+
+filtered_df = df.copy()
+
+if selected_country != "All":
+
+    filtered_df = filtered_df[filtered_df["Country"] == selected_country]
+
+if selected_stock != "All":
+
+    filtered_df = filtered_df[filtered_df["Ticker"] == selected_stock]
+
+
 st.markdown("## 📊 Market Snapshot")
-st.markdown("""
+st.markdown(
+    """
 <p style="
 margin-top:-10px;
 margin-bottom:15px;
@@ -283,58 +325,43 @@ color:#94A3B8;
 ">
 Quick overview of today's market leaders and movers
 </p>
-""", unsafe_allow_html=True)
-
-
-col1,col2,col3,col4,col5 = st.columns(
-    [1.2,1.2,1.2,1.2,1.2],
-    gap="medium"
+""",
+    unsafe_allow_html=True,
 )
+
+
+col1, col2, col3, col4, col5 = st.columns([1.2, 1.2, 1.2, 1.2, 1.2], gap="medium")
 
 
 df = df.sort_values(["Ticker", "Date"])
 
-df["Daily_Return"] = (
-    df.groupby("Ticker")["Close"]
-    .pct_change() * 100
-)
+df["Daily_Return"] = df.groupby("Ticker")["Close"].pct_change() * 100
 
 latest_date = df["Date"].max()
 
-latest_df = df[df["Date"] == latest_date].copy()
+filtered_df = df[df["Date"] == latest_date].copy()
 
 # Best Performer
-best_stock = latest_df.loc[
-    latest_df["Daily_Return"].idxmax()
-]
+best_stock = filtered_df.loc[filtered_df["Daily_Return"].idxmax()]
 
 # Worst Performer
-worst_stock = latest_df.loc[
-    latest_df["Daily_Return"].idxmin()
-]
+worst_stock = filtered_df.loc[filtered_df["Daily_Return"].idxmin()]
 
 # Highest Volume
-volume_stock = latest_df.loc[
-    latest_df["Volume"].idxmax()
-]
+volume_stock = filtered_df.loc[filtered_df["Volume"].idxmax()]
 
 # Countries Covered
-country_count = latest_df["Country"].nunique()
+country_count = filtered_df["Country"].nunique()
 
 # Strongest Market
-country_perf = (
-    latest_df.groupby("Country")["Daily_Return"]
-    .mean()
-    .reset_index()
-)
+country_perf = filtered_df.groupby("Country")["Daily_Return"].mean().reset_index()
 
-best_country = country_perf.loc[
-    country_perf["Daily_Return"].idxmax()
-]
+best_country = country_perf.loc[country_perf["Daily_Return"].idxmax()]
 
 
 with col1:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="kpi-card">
         <div class="kpi-icon">📈</div>
         <div class="kpi-title">Best Performer</div>
@@ -343,10 +370,13 @@ with col1:
             {best_stock['Daily_Return']:.2f}%
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 with col2:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="kpi-card">
         <div class="kpi-icon">🔥</div>
         <div class="kpi-title">Strongest Market</div>
@@ -355,10 +385,13 @@ with col2:
             {best_country['Daily_Return']:.2f}%
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 with col3:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="kpi-card">
     <div class="kpi-icon">💰</div>
     <div class="kpi-title">Highest Volume</div>
@@ -367,10 +400,13 @@ with col3:
     {volume_stock['Volume']:,.0f}
     </div>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
 with col4:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="kpi-card">
     <div class="kpi-icon">📉</div>
     <div class="kpi-title">Biggest Decliner</div>
@@ -379,10 +415,13 @@ with col4:
     {worst_stock['Daily_Return']:.2f}%
     </div>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
 with col5:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="kpi-card">
     <div class="kpi-icon">🌍</div>
     <div class="kpi-title">Markets Covered</div>
@@ -393,4 +432,6 @@ with col5:
     Countries
     </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
