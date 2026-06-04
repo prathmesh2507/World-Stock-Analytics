@@ -207,7 +207,7 @@ pip install -r requirements.txt
 Run dashboard:
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 ---
@@ -238,9 +238,6 @@ Passionate about:
 - Interactive Dashboard Design
 - Building User-Centric Analytics Products
 
-GitHub:
-
-https://github.com/prathmesh2507/Global-Stock-Intelligence-Dashboard.git
 ---
 
 # ⭐ Support
