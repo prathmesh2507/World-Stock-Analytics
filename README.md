@@ -6,7 +6,7 @@
 
 Analyze market movements, explore stock performance, compare global markets, and generate actionable insights through an interactive financial dashboard.
 
-[Live Demo](https://municipal-krypton-delusion.ngrok-free.dev)
+[Live Demo](https://global-stock-intelligence-dashboard-kt2yprnaklgpyef5ikcpcj.streamlit.app/)
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red?style=for-the-badge&logo=streamlit)
