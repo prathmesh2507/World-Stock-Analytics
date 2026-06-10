@@ -213,12 +213,9 @@ python -m streamlit run app.py
 
 # 🔥 Future Improvements
 
-- Portfolio Analytics
 - Risk Metrics
 - Sharpe Ratio
-- Technical Indicators
 - Forecasting Models
-- AI Insights Engine
 - News Sentiment Analysis
 - Real-Time Data Integration
 - Alert System
