@@ -2,7 +2,7 @@
 
 <div align="center">
 
-### Interactive Global Stock Analytics Platform Built with Python, Streamlit & Plotly
+## Interactive Global Stock Analytics Platform Built with Python, Streamlit & Plotly
 
 Analyze market movements, explore stock performance, compare global markets, and generate actionable insights through an interactive financial dashboard.
 
@@ -86,7 +86,6 @@ Supports stocks across:
 - Premium dark UI
 - Interactive KPI cards
 - Financial storytelling design
-- Mobile responsive layout
 - Smooth filtering experience
 - Recruiter-friendly presentation
 
